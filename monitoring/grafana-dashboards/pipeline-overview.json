@@ -1,0 +1,93 @@
+{
+    "id": null,
+    "uid": "streampulse-pipeline-overview",
+    "title": "StreamPulse - Pipeline Overview",
+    "tags": ["streampulse", "pipeline"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Events Throughput (events/sec)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\",topic=\"events\"}[5m]))",
+            "legendFormat": "Events/sec",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "API Response Time (p95)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"tripstream-api\"}[5m]))",
+            "legendFormat": "p95 Latency",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Pipeline Health Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=~\"kafka|flink-.*|tripstream-api\"}",
+            "legendFormat": "{{job}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Total Events Processed",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(increase(kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\",topic=\"events\"}[1m]))",
+            "legendFormat": "Events",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+        "xAxis": {"show": true},
+        "yAxes": [
+          {"label": "Events", "show": true},
+          {"show": true}
+        ]
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "5s",
+    "schemaVersion": 30,
+    "version": 1
+}

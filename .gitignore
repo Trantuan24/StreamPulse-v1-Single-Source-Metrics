@@ -1,0 +1,281 @@
+# StreamPulse v1 - GitIgnore Configuration
+# Generated for GitHub repository preparation
+
+# ============================================================================
+# JAVA / MAVEN
+# ============================================================================
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================================================
+# DOCKER & CONTAINERS
+# ============================================================================
+.docker/
+docker-compose.override.yml
+.dockerignore
+
+# ============================================================================
+# DATA & LOGS
+# ============================================================================
+*.log
+*.out
+logs/
+log/
+*.tmp
+*.temp
+
+# Large data files (keep sample data but ignore large datasets)
+*.csv.bak
+*.json.bak
+data/large/
+data/raw/
+data/processed/
+!ops/data/streampulse_sample_trips.csv
+
+# ============================================================================
+# FLINK & KAFKA
+# ============================================================================
+# Flink checkpoints and savepoints
+flink-checkpoints/
+checkpoints/
+savepoints/
+flink-web-upload/
+
+# Kafka logs
+kafka-logs/
+kafka-logs-*/
+
+# ============================================================================
+# REDIS
+# ============================================================================
+dump.rdb
+appendonly.aof
+redis-data/
+
+# ============================================================================
+# MONITORING & METRICS
+# ============================================================================
+prometheus-data/
+grafana-data/
+alertmanager-data/
+
+# ============================================================================
+# IDE & EDITORS
+# ============================================================================
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ============================================================================
+# OPERATING SYSTEM
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================================================
+# SECURITY & SECRETS
+# ============================================================================
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ============================================================================
+# TEMPORARY & BACKUP FILES
+# ============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+*.temp
+*~
+.#*
+#*#
+
+# ============================================================================
+# DOCKER VOLUMES (persistent data)
+# ============================================================================
+zookeeper-data/
+zookeeper-logs/
+kafka-data/
+redis-data/
+prometheus-data/
+grafana-data/
+alertmanager-data/
+flink-checkpoints/
+
+# ============================================================================
+# PROJECT SPECIFIC
+# ============================================================================
+# Keep important sample files but ignore generated ones
+!ops/data/streampulse_sample_trips.csv
+ops/data/*.generated.csv
+ops/data/output/
+
+# Test outputs
+test-output/
+test-results/
+
+# Performance test data
+perf-test-data/
+load-test-results/

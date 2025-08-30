@@ -1,0 +1,118 @@
+{
+    "id": null,
+    "uid": "streampulse-business-metrics",
+    "title": "StreamPulse - Business Metrics",
+    "tags": ["streampulse", "business"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"tripstream-api\"}[5m])",
+            "legendFormat": "Requests/sec - {{method}} {{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "yAxes": [
+          {"label": "Requests/sec", "show": true},
+          {"show": true}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "API Response Status",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"tripstream-api\"}[5m])",
+            "legendFormat": "{{status_code}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "yAxes": [
+          {"label": "Responses/sec", "show": true},
+          {"show": true}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Redis Connection Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "redis_connected_clients",
+            "legendFormat": "Connected Clients",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Redis Memory Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes",
+            "legendFormat": "Memory Used",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 8},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Redis Keys Count",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "redis_db_keys",
+            "legendFormat": "Total Keys",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Pipeline End-to-End Latency",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"tripstream-api\"}[5m]))",
+            "legendFormat": "p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"tripstream-api\"}[5m]))",
+            "legendFormat": "p95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"tripstream-api\"}[5m]))",
+            "legendFormat": "p99",
+            "refId": "C"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 12},
+        "yAxes": [
+          {"label": "Seconds", "show": true},
+          {"show": true}
+        ]
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "30s",
+    "schemaVersion": 30,
+    "version": 1
+}

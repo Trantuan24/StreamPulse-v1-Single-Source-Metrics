@@ -1,0 +1,90 @@
+groups:
+  - name: streampulse-pipeline
+    rules:
+      - alert: HighConsumerLag
+        expr: kafka_consumer_lag_sum{topic="events"} > 1000
+        for: 2m
+        labels:
+          severity: warning
+          service: kafka
+          component: consumer
+        annotations:
+          summary: "High consumer lag detected"
+          description: "Consumer lag is {{ $value }} messages for topic events"
+
+      - alert: FlinkJobManagerDown
+        expr: up{job="flink-jobmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: flink
+          component: jobmanager
+        annotations:
+          summary: "Flink JobManager is down"
+          description: "Flink JobManager has been down for more than 1 minute"
+
+      - alert: FlinkTaskManagerDown
+        expr: up{job="flink-taskmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: flink
+          component: taskmanager
+        annotations:
+          summary: "Flink TaskManager is down"
+          description: "Flink TaskManager has been down for more than 1 minute"
+
+      - alert: APIHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="tripstream-api"}[5m])) > 1
+        for: 3m
+        labels:
+          severity: warning
+          service: api
+          component: fastapi
+        annotations:
+          summary: "API high latency detected"
+          description: "95th percentile latency is {{ $value }}s"
+
+      - alert: APIDown
+        expr: up{job="tripstream-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: api
+          component: fastapi
+        annotations:
+          summary: "API service is down"
+          description: "FastAPI service is unreachable"
+
+      - alert: KafkaDown
+        expr: up{job="kafka"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: kafka
+          component: broker
+        annotations:
+          summary: "Kafka broker is down"
+          description: "Kafka service is unreachable"
+
+      - alert: LowThroughput
+        expr: rate(kafka_server_brokertopicmetrics_messagesinpersec_total{topic="events"}[5m]) < 1
+        for: 5m
+        labels:
+          severity: warning
+          service: pipeline
+          component: throughput
+        annotations:
+          summary: "Low pipeline throughput"
+          description: "Pipeline throughput is {{ $value }} events/sec"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="tripstream-api",status_code=~"5.."}[5m]) / rate(http_requests_total{job="tripstream-api"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: api
+          component: errors
+        annotations:
+          summary: "High API error rate"
+          description: "API error rate is {{ $value | humanizePercentage }}"

@@ -1,0 +1,118 @@
+{
+    "id": null,
+    "uid": "streampulse-flink-metrics",
+    "title": "StreamPulse - Flink Metrics",
+    "tags": ["streampulse", "flink"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Flink JobManager Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"flink-jobmanager\"}",
+            "legendFormat": "JobManager",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Flink TaskManager Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"flink-taskmanager\"}",
+            "legendFormat": "TaskManager",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Available Task Slots",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(flink_jobmanager_numRegisteredTaskManagers)",
+            "legendFormat": "Available Slots",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "JVM Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(flink_taskmanager_Status_JVM_Memory_Heap_Used)",
+            "legendFormat": "Heap Used",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(flink_taskmanager_Status_JVM_Memory_Heap_Max)",
+            "legendFormat": "Heap Max",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "yAxes": [
+          {"label": "Bytes", "show": true},
+          {"show": true}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Records Processing Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(flink_taskmanager_job_task_operator_numRecordsIn[5m])) by (operator_name)",
+            "legendFormat": "{{operator_name}} - In",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(flink_taskmanager_job_task_operator_numRecordsOut[5m])) by (operator_name)",
+            "legendFormat": "{{operator_name}} - Out",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "yAxes": [
+          {"label": "Records/sec", "show": true},
+          {"show": true}
+        ]
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "5s",
+    "schemaVersion": 30,
+    "version": 1
+}

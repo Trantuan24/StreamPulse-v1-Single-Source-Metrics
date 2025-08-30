@@ -1,0 +1,64 @@
+# Prometheus configuration for TripStream Analytics
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "alerts/*.yml"
+
+# Scrape configuration
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # FastAPI application metrics
+  - job_name: "tripstream-api"
+    static_configs:
+      - targets: ["api:8000"]
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+
+  # Kafka JMX metrics
+  - job_name: "kafka"
+    static_configs:
+      - targets: ["kafka:9101"]
+    scrape_interval: 30s
+
+  # Flink JobManager metrics
+  - job_name: "flink-jobmanager"
+    static_configs:
+      - targets: ["flink-jobmanager:9249"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+
+  # Flink TaskManager metrics
+  - job_name: "flink-taskmanager"
+    static_configs:
+      - targets: ["flink-taskmanager:9249"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+
+  # Redis metrics
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+    scrape_interval: 30s
+
+  # Node exporter for system metrics (commented out - not configured yet)
+  # - job_name: "node"
+  #   static_configs:
+  #     - targets: ["node-exporter:9100"]
+  #   scrape_interval: 30s
+# Remote write configuration (for long-term storage)
+# remote_write:
+#   - url: "http://remote-storage:9201/write"

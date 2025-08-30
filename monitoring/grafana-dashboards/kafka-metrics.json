@@ -1,0 +1,102 @@
+{
+    "id": null,
+    "uid": "streampulse-kafka-metrics",
+    "title": "StreamPulse - Kafka Metrics",
+    "tags": ["streampulse", "kafka"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Consumer Lag",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(flink_taskmanager_job_task_operator_KafkaSourceReader_KafkaConsumer_records_lag_max{job_name=~\".*Trip_Metrics_Job.*\"}) by (task_name)",
+            "legendFormat": "Consumer Lag - {{partition}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "yAxes": [
+          {"label": "Messages", "show": true},
+          {"show": true}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Messages In Per Second",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(kafka_server_BrokerTopicMetrics_Count{name=\"MessagesInPerSec\", topic=\"events\"}[5m])) by (topic)",
+            "legendFormat": "Messages/sec",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "yAxes": [
+          {"label": "Messages/sec", "show": true},
+          {"show": true}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Kafka Broker Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"kafka\"}",
+            "legendFormat": "Kafka Broker",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 8},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Topic Partitions",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "kafka_server_ReplicaManager_Value{name=\"PartitionCount\"}",
+            "legendFormat": "Partitions",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Bytes In Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(kafka_server_BrokerTopicMetrics_Count{name=\"BytesInPerSec\", topic=\"events\"}[5m])) by (topic)",
+            "legendFormat": "Bytes/sec",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 8},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "binBps"
+          }
+        }
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "10s",
+    "schemaVersion": 30,
+    "version": 1
+}

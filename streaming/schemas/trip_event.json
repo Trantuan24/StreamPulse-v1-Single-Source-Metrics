@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trip Event Schema",
+  "description": "Schema for trip events in TripStream Analytics pipeline",
+  "type": "object",
+  "properties": {
+    "trip_id": {
+      "type": "string",
+      "description": "Unique identifier for the trip",
+      "pattern": "^trip_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "example": "trip_12345678-1234-1234-1234-123456789abc"
+    },
+    "region_id": {
+      "type": "integer",
+      "description": "Region identifier for partitioning and aggregation",
+      "minimum": 1,
+      "maximum": 100,
+      "example": 1
+    },
+    "event_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp in ISO 8601 format (event-time for windowing)",
+      "example": "2025-08-15T10:30:00.000Z"
+    },
+    "fare": {
+      "type": "number",
+      "description": "Trip fare in USD",
+      "minimum": 0,
+      "maximum": 1000,
+      "multipleOf": 0.01,
+      "example": 25.50
+    },
+    "duration": {
+      "type": "integer",
+      "description": "Trip duration in seconds",
+      "minimum": 60,
+      "maximum": 86400,
+      "example": 1800
+    },
+    "distance": {
+      "type": "number",
+      "description": "Trip distance in kilometers",
+      "minimum": 0.1,
+      "maximum": 500,
+      "multipleOf": 0.1,
+      "example": 12.5
+    },
+    "pickup_location": {
+      "type": "object",
+      "description": "Pickup location coordinates",
+      "properties": {
+        "lat": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "example": 40.7128
+        },
+        "lon": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "example": -74.0060
+        }
+      },
+      "required": ["lat", "lon"]
+    },
+    "dropoff_location": {
+      "type": "object",
+      "description": "Dropoff location coordinates",
+      "properties": {
+        "lat": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "example": 40.7589
+        },
+        "lon": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "example": -73.9851
+        }
+      },
+      "required": ["lat", "lon"]
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Driver identifier",
+      "pattern": "^driver_[0-9]+$",
+      "example": "driver_12345"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "description": "Type of vehicle used for the trip",
+      "enum": ["economy", "premium", "luxury", "shared"],
+      "example": "economy"
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "Payment method used",
+      "enum": ["cash", "credit_card", "digital_wallet", "corporate"],
+      "example": "credit_card"
+    }
+  },
+  "required": [
+    "trip_id",
+    "region_id", 
+    "event_time",
+    "fare",
+    "duration",
+    "distance"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "trip_id": "trip_12345678-1234-1234-1234-123456789abc",
+      "region_id": 1,
+      "event_time": "2025-08-15T10:30:00.000Z",
+      "fare": 25.50,
+      "duration": 1800,
+      "distance": 12.5,
+      "pickup_location": {
+        "lat": 40.7128,
+        "lon": -74.0060
+      },
+      "dropoff_location": {
+        "lat": 40.7589,
+        "lon": -73.9851
+      },
+      "driver_id": "driver_12345",
+      "vehicle_type": "economy",
+      "payment_method": "credit_card"
+    }
+  ]
+}
