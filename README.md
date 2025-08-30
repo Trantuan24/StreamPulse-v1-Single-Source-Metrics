@@ -4,6 +4,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![Apache Flink](https://img.shields.io/badge/Apache%20Flink-1.17-orange.svg)](https://flink.apache.org/)
 [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-7.4.0-red.svg)](https://kafka.apache.org/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Trantuan24/StreamPulse-v1-Single-Source-Metrics)
 
 > **Level 1 - StreamMetrics Starter Project**
 > A comprehensive real-time data pipeline for learning stream processing fundamentals
