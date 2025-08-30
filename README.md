@@ -78,7 +78,7 @@ tripstream-analytics/
 
 ```bash
 # Clone repository
-git clone <your-repo-url>
+git clone https://github.com/Trantuan24/StreamPulse-v1-Single-Source-Metrics
 cd StreamPulse-v1
 
 # Khởi động toàn bộ pipeline
