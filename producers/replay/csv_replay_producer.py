@@ -1,7 +1,5 @@
 """
 CSV Replay Producer cho StreamPulse v1
-Author: Trần Duy Tuấn
-Date: 2025-08-17
 
 Tính năng:
 - Đọc CSV với pandas

@@ -1,7 +1,5 @@
 """
 Generate Sample Trip Data cho StreamPulse v1
-Author: Trần Duy Tuấn
-Date: 2025-08-17
 
 Tạo realistic sample data với:
 - 300 trip records
@@ -263,20 +261,24 @@ class SampleDataGenerator:
         print("="*50)
 
 
-def main():
+import click
+
+@click.command()
+@click.option('--output-file', default='../../ops/data/streampulse_sample_trips.csv', help='Output CSV file path.')
+@click.option('--num-records', default=300, help='Number of records to generate.')
+def main(output_file: str, num_records: int):
     """Main function"""
     print("🚀 StreamPulse v1 - Sample Data Generator")
     print("="*50)
 
     # Generate data
-    generator = SampleDataGenerator(num_records=300)
+    generator = SampleDataGenerator(num_records=num_records)
     trips = generator.generate_sample_data()
 
-    # Save to CSV trong ops/data directory (đúng cấu trúc dự án)
-    output_file = "../../ops/data/streampulse_sample_trips.csv"
-
-    # Create ops/data directory if not exists
-    os.makedirs("../../ops/data", exist_ok=True)
+    # Create directory if not exists
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
 
     generator.save_to_csv(trips, output_file)
     generator.print_statistics(trips)

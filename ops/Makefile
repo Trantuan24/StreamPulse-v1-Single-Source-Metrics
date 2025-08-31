@@ -1,6 +1,5 @@
 # StreamPulse v1 - Makefile for Pipeline Automation
-# Author: Cascade
-# Date: 2025-08-30
+
 
 # Define variables
 COMPOSE_FILE = ../infra/docker-compose/docker-compose.yml
