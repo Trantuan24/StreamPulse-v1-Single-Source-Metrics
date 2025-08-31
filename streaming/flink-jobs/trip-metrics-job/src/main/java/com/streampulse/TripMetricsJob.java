@@ -50,18 +50,28 @@ public class TripMetricsJob {
         // IMPORTANT: Set the time characteristic to EventTime for all time-based operations
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        // Set parallelism to match TaskManager slots
-        env.setParallelism(2);
+        // PERFORMANCE OPTIMIZATION: Increase parallelism
+        env.setParallelism(4);  // Increased from 2 to 4 for better throughput
+        
+        // Performance optimizations
+        env.enableCheckpointing(30000);  // 30 seconds (reduced from default 60s)
+        env.getConfig().setAutoWatermarkInterval(1000L);  // 1s watermark interval
+        env.getConfig().setLatencyTrackingInterval(5000L);  // 5s latency tracking
 
         LOG.info("🚀 Starting StreamPulse v1 - Trip Metrics Job");
         LOG.info("📊 Parallelism: {}", env.getParallelism());
 
-        // 2. Configure Kafka source with consumer properties
+        // 2. Configure Kafka source with OPTIMIZED consumer properties 
         Properties kafkaProps = new Properties();
         kafkaProps.setProperty("enable.auto.commit", "true");
-        kafkaProps.setProperty("auto.commit.interval.ms", "5000");
+        kafkaProps.setProperty("auto.commit.interval.ms", "1000");  // Reduced from 5000ms
         kafkaProps.setProperty("session.timeout.ms", "30000");
-        kafkaProps.setProperty("heartbeat.interval.ms", "10000");
+        kafkaProps.setProperty("heartbeat.interval.ms", "3000");  // Reduced from 10000ms
+        
+        // Performance optimizations
+        kafkaProps.setProperty("fetch.min.bytes", "1024");  // Fetch at least 1KB
+        kafkaProps.setProperty("fetch.max.wait.ms", "500");  // Max wait 500ms
+        kafkaProps.setProperty("max.partition.fetch.bytes", "1048576");  // 1MB per partition
 
         KafkaSource<String> kafkaSource = KafkaSource.<String>builder()
                 .setBootstrapServers("kafka:29092")  // Internal Docker network
