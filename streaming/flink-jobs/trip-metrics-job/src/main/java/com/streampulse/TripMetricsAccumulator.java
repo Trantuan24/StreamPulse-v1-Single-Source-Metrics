@@ -15,5 +15,25 @@ public class TripMetricsAccumulator {
     public long totalDuration = 0;
     public List<Integer> durationList = new ArrayList<>();
 
+
+    public long getCount() {
+        return count;
+    }
+
+    public double getFareSum() {
+        return totalFare;
+    }
+
+    public double getDistanceSum() {
+        return totalDistance;
+    }
+
+    public long getDurationSum() {
+        return totalDuration;
+    }
+
+    public List<Integer> getDurationList() {
+        return durationList;
+    }
 }
 

@@ -1,5 +1,7 @@
 """
 Trip Event Schema Definition for StreamPulse v1
+Author: Trần Duy Tuấn
+Date: 2025-08-17
 """
 
 from datetime import datetime

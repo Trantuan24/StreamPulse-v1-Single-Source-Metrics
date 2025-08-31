@@ -1,6 +1,5 @@
 # StreamPulse v1 - Makefile for Pipeline Automation
 
-
 # Define variables
 COMPOSE_FILE = ../infra/docker-compose/docker-compose.yml
 PRODUCER_SCRIPT = ../producers/replay/csv_replay_producer.py
