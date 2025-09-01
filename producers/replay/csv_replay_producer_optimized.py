@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Day 12 Performance Optimized CSV Replay Producer
+Performance Optimized CSV Replay Producer
 
 PERFORMANCE OPTIMIZATIONS:
 - LZ4 compression (fastest)
@@ -10,7 +10,7 @@ PERFORMANCE OPTIMIZATIONS:
 - Multiple in-flight requests (8)
 - Leader acknowledgment only (acks=1)
 
-Target: 15-20K events/s
+Target: 10-20K events/s
 """
 
 import sys
@@ -30,9 +30,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'streaming',
 from trip_event import TripEvent
 
 
-class Day12OptimizedProducer:
+class OptimizedProducer:
     """
-    Day 12 High-Performance Producer
+    High-Performance Producer
     Target: 15-20K events/s throughput
     """
     
@@ -57,13 +57,13 @@ class Day12OptimizedProducer:
         }
         
     def _init_optimized_producer(self):
-        """Initialize Kafka producer with Day 12 optimizations"""
+        """Initialize Kafka producer with performance optimizations"""
         producer_config = {
             'bootstrap_servers': 'localhost:9092',
             'value_serializer': lambda v: v.encode('utf-8'),
             'key_serializer': lambda k: k.encode('utf-8') if k else None,
             
-            # DAY 12 PERFORMANCE OPTIMIZATIONS
+            # PERFORMANCE OPTIMIZATIONS
             'batch_size': 131072,  # 128KB batches (8x larger)
             'linger_ms': 20,       # 20ms linger for better batching
             'buffer_memory': 268435456,  # 256MB buffer (8x larger)
@@ -87,9 +87,8 @@ class Day12OptimizedProducer:
         
         producer = KafkaProducer(**producer_config)
         
-        self.logger.info("🚀 Day 12 Optimized Producer Initialized")
+        self.logger.info("🚀 Optimized Producer Initialized")
         self.logger.info("📊 Performance Configuration:")
-        self.logger.info(f"   Batch Size: 128KB")
         self.logger.info(f"   Linger Time: 20ms")
         self.logger.info(f"   Buffer Memory: 256MB")
         self.logger.info(f"   Compression: GZIP")
@@ -193,7 +192,7 @@ class Day12OptimizedProducer:
         duration_seconds = duration.total_seconds()
         
         self.logger.info("=" * 70)
-        self.logger.info("🚀 DAY 12 PERFORMANCE RESULTS")
+        self.logger.info("🚀 PERFORMANCE RESULTS")
         self.logger.info("=" * 70)
         self.logger.info(f"Total events processed: {self.stats['total_events']}")
         self.logger.info(f"Successfully sent: {self.stats['sent_events']}")
@@ -206,9 +205,9 @@ class Day12OptimizedProducer:
             self.logger.info(f"📈 THROUGHPUT: {throughput:.1f} events/sec")
             
             # Performance analysis
-            baseline_throughput = 10568  # From Day 11
+            baseline_throughput = 10568  # Baseline throughput
             improvement = throughput / baseline_throughput
-            self.logger.info(f"🚀 IMPROVEMENT: {improvement:.1f}x vs Day 11 baseline")
+            self.logger.info(f"🚀 IMPROVEMENT: {improvement:.1f}x vs baseline")
             
             # Target analysis
             if throughput >= 15000:
@@ -232,11 +231,11 @@ class Day12OptimizedProducer:
 @click.option('--max-events', default=None, type=int, help='Maximum events to send')
 def main(csv_file, max_events):
     """
-    Day 12 High-Performance CSV Producer
-    Target: 15-20K events/s
+    High-Performance CSV Producer
+    Target: 10-20K events/s
     """
     try:
-        producer = Day12OptimizedProducer()
+        producer = OptimizedProducer()
         
         # Pre-load data
         trip_events = producer.preload_and_validate_data(csv_file, max_events)
@@ -254,3 +253,4 @@ def main(csv_file, max_events):
 
 if __name__ == "__main__":
     main()
+

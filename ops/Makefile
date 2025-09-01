@@ -2,7 +2,7 @@
 
 # Define variables
 COMPOSE_FILE = ../infra/docker-compose/docker-compose.yml
-PRODUCER_SCRIPT = ../producers/replay/csv_replay_producer.py
+PRODUCER_SCRIPT = ../producers/replay/csv_replay_producer_optimized.py
 SAMPLE_DATA = data/streampulse_sample_trips.csv
 
 COMPOSE_CMD = docker compose

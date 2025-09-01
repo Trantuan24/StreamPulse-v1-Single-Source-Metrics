@@ -86,7 +86,10 @@ class HealthResponse(BaseModel):
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint to verify service status and dependencies."""
+    """Enhanced health check endpoint to verify service status and dependencies."""
+    start_time = datetime.now(timezone.utc)
+    
+    # Check Redis connectivity
     redis_status = "disconnected"
     try:
         r = redis.Redis(connection_pool=redis_pool)
@@ -98,14 +101,43 @@ async def health_check():
         logger.error(f"Redis health check failed: {e}")
         redis_status = "error"
 
-    api_status = "healthy" if redis_status == "connected" else "degraded"
+    # Check Kafka connectivity
+    kafka_status = "disconnected"
+    try:
+        from kafka import KafkaProducer
+        # Quick connectivity test with minimal timeout
+        producer = KafkaProducer(
+            bootstrap_servers=['kafka:29092'],
+            value_serializer=lambda x: x.encode('utf-8'),
+            request_timeout_ms=2000,  # 2 second timeout
+            retries=1
+        )
+        
+        # Test produce a tiny message to check connectivity
+        future = producer.send('events', value='health_check_ping')
+        producer.flush(timeout=2)  # Wait max 2 seconds
+        kafka_status = "connected"
+        producer.close()
+        
+    except Exception as e:
+        logger.error(f"Kafka health check failed: {e}")
+        kafka_status = "error"
+
+    # Determine overall API status
+    all_services_healthy = redis_status == "connected" and kafka_status == "connected"
+    api_status = "healthy" if all_services_healthy else "degraded"
+    
+    # Calculate response time
+    response_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
 
     return HealthResponse(
         status=api_status,
         timestamp=datetime.now(timezone.utc).isoformat(),
         services={
             "redis": redis_status,
-            "api": "running"
+            "kafka": kafka_status,
+            "api": "running",
+            "response_time_ms": str(response_time_ms)
         }
     )
 

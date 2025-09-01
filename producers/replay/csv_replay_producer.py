@@ -60,6 +60,7 @@ class CSVReplayProducer:
             'total_events': 0,
             'sent_events': 0,
             'failed_events': 0,
+            'retry_attempts': 0,  # DAY 13: Track retry attempts
             'start_time': None,
             'end_time': None
         }
@@ -152,7 +153,7 @@ class CSVReplayProducer:
     
     def send_event_to_kafka(self, trip_event: TripEvent) -> bool:
         """
-        Send single event to Kafka với error handling
+        DAY 13: Send single event to Kafka with enhanced retry logic
         
         Args:
             trip_event: TripEvent to send
@@ -160,37 +161,67 @@ class CSVReplayProducer:
         Returns:
             True if successful, False otherwise
         """
-        try:
-            # Prepare message
-            message = trip_event.to_kafka_message()
-            partition_key = trip_event.get_partition_key()
-            
-            # Send to Kafka
-            future = self.producer.send(
-                topic=self.kafka_topic,
-                value=message,
-                key=partition_key
-            )
-            
-            # Wait for confirmation (với timeout)
-            record_metadata = future.get(timeout=10)
-            
-            self.logger.debug(
-                f"📤 Sent event {trip_event.trip_id} to partition {record_metadata.partition}, "
-                f"offset {record_metadata.offset}"
-            )
-            
-            self.stats['sent_events'] += 1
-            return True
-            
-        except KafkaError as e:
-            self.logger.error(f"❌ Kafka error sending event {trip_event.trip_id}: {e}")
-            self.stats['failed_events'] += 1
-            return False
-        except Exception as e:
-            self.logger.error(f"❌ Unexpected error sending event {trip_event.trip_id}: {e}")
-            self.stats['failed_events'] += 1
-            return False
+        max_retries = 3
+        base_delay = 1.0  # 1 second base delay
+        
+        for attempt in range(max_retries + 1):  # 0 to max_retries (4 total attempts)
+            try:
+                # Prepare message
+                message = trip_event.to_kafka_message()
+                partition_key = trip_event.get_partition_key()
+                
+                # Send to Kafka
+                future = self.producer.send(
+                    topic=self.kafka_topic,
+                    value=message,
+                    key=partition_key
+                )
+                
+                # Wait for confirmation (với timeout)
+                record_metadata = future.get(timeout=10)
+                
+                self.logger.debug(
+                    f"📤 Sent event {trip_event.trip_id} to partition {record_metadata.partition}, "
+                    f"offset {record_metadata.offset}"
+                )
+                
+                # Success on first attempt or retry
+                if attempt > 0:
+                    self.logger.info(f"✅ Event {trip_event.trip_id} sent successfully on attempt {attempt + 1}")
+                
+                self.stats['sent_events'] += 1
+                return True
+                
+            except KafkaError as e:
+                if attempt < max_retries:
+                    # Calculate exponential backoff delay
+                    delay = base_delay * (2 ** attempt)
+                    self.stats['retry_attempts'] += 1  # DAY 13: Track retry
+                    self.logger.warning(
+                        f"⚠️ Kafka error sending event {trip_event.trip_id} (attempt {attempt + 1}/{max_retries + 1}): {e}. "
+                        f"Retrying in {delay:.1f}s..."
+                    )
+                    time.sleep(delay)
+                else:
+                    self.logger.error(f"❌ Failed to send event {trip_event.trip_id} after {max_retries + 1} attempts: {e}")
+                    self.stats['failed_events'] += 1
+                    return False
+                    
+            except Exception as e:
+                if attempt < max_retries:
+                    delay = base_delay * (2 ** attempt)
+                    self.stats['retry_attempts'] += 1  # DAY 13: Track retry
+                    self.logger.warning(
+                        f"⚠️ Unexpected error sending event {trip_event.trip_id} (attempt {attempt + 1}/{max_retries + 1}): {e}. "
+                        f"Retrying in {delay:.1f}s..."
+                    )
+                    time.sleep(delay)
+                else:
+                    self.logger.error(f"❌ Failed to send event {trip_event.trip_id} after {max_retries + 1} attempts: {e}")
+                    self.stats['failed_events'] += 1
+                    return False
+        
+        return False  # Should never reach here
     
     def replay_csv_data(
         self,
@@ -229,7 +260,7 @@ class CSVReplayProducer:
                 trip_event = self.validate_trip_event(row)
                 if not trip_event:
                     continue
-                
+
                 # Send to Kafka
                 success = self.send_event_to_kafka(trip_event)
                 
@@ -270,6 +301,7 @@ class CSVReplayProducer:
         self.logger.info(f"Total events processed: {self.stats['total_events']}")
         self.logger.info(f"Successfully sent: {self.stats['sent_events']}")
         self.logger.info(f"Failed events: {self.stats['failed_events']}")
+        self.logger.info(f"Retry attempts: {self.stats['retry_attempts']}")  # DAY 13: Show retry stats
         self.logger.info(f"Success rate: {(self.stats['sent_events'] / self.stats['total_events'] * 100):.1f}%")
         self.logger.info(f"Duration: {duration}")
         self.logger.info(f"Throughput: {(self.stats['sent_events'] / duration.total_seconds()):.1f} events/sec")

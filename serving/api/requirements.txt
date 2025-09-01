@@ -19,6 +19,9 @@ prometheus-client==0.19.0
 # Logging and monitoring
 structlog==23.2.0
 
+# Kafka client for health checks
+kafka-python==2.0.2
+
 # Development dependencies (optional)
 pytest==7.4.3
 pytest-asyncio==0.21.1

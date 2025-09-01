@@ -29,6 +29,11 @@ import java.time.LocalDateTime;
 import org.apache.flink.streaming.connectors.redis.RedisSink;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
 
+import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
+import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.api.common.functions.MapFunction;
+
 /**
  * StreamPulse v1 - Trip Metrics Job
  *
@@ -99,17 +104,43 @@ public class TripMetricsJob {
         // 5. Apply event-time watermarks with EXTENDED out-of-orderness for testing old data
         DataStream<TripEvent> tripStream = tripStreamWithSideOutputs
                 .assignTimestampsAndWatermarks(
-                                        WatermarkStrategy.<TripEvent>forBoundedOutOfOrderness(Duration.ofSeconds(20))
+                                        WatermarkStrategy.<TripEvent>forBoundedOutOfOrderness(Duration.ofMinutes(5))
                         .withTimestampAssigner((event, timestamp) -> event.getEventTimeMillis())
                         .withIdleness(Duration.ofSeconds(10)) // Mark source as idle
                 );
 
-        // 6. Monitor failed events
+        // 6. Enhanced failed events handling with DLQ
         DataStream<String> failedEvents = tripStreamWithSideOutputs.getSideOutput(FAILED_EVENTS_TAG);
-        failedEvents
-                .map(failedJson -> "FAILED: " + failedJson.substring(0, Math.min(50, failedJson.length())) + "...")
-                .name("Failed Events Monitor")
-                .print("FAILED-EVENTS");
+        
+        // Send failed events to Dead Letter Queue
+        LOG.info("📤 Setting up Dead Letter Queue for failed events...");
+        
+        // Create enhanced failed event messages with metadata
+        DataStream<String> enrichedFailedEvents = failedEvents
+                .map(new FailedEventEnricher())
+                .name("Failed Event Enricher");
+        
+        // Configure DLQ Kafka Sink
+        KafkaSink<String> dlqSink = KafkaSink.<String>builder()
+                .setBootstrapServers("kafka:29092")
+                .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                        .setTopic("events_dlq")
+                        .setValueSerializationSchema(new SimpleStringSchema())
+                        .setKeySerializationSchema(new SimpleStringSchema())
+                        .build())
+                .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                .build();
+        
+        // Send enriched failed events to DLQ
+        enrichedFailedEvents.sinkTo(dlqSink).name("Dead Letter Queue Sink");
+        
+        // Keep console logging for debugging
+        enrichedFailedEvents
+                .map(enrichedJson -> "DLQ: " + enrichedJson.substring(0, Math.min(100, enrichedJson.length())) + "...")
+                .name("DLQ Monitor")
+                .print("DLQ-EVENTS");
+        
+        LOG.info("✅ Dead Letter Queue configured successfully");
 
         // 7. Add window assignment monitoring
         DataStream<TripEvent> monitoredStream = tripStream
@@ -199,5 +230,48 @@ public class TripMetricsJob {
                 LOG.warn("Failed to parse JSON #{}: {}", failureCount, errorMessage);
             }
         }
+    }
+
+    /**
+     * MapFunction to enrich failed events with metadata for DLQ
+     */
+    public static class FailedEventEnricher implements MapFunction<String, String> {
+        private static final ObjectMapper objectMapper = new ObjectMapper();
+        
+        static {
+            objectMapper.registerModule(new JavaTimeModule());
+        }
+
+        @Override
+        public String map(String failedJson) throws Exception {
+            try {
+                // Create DLQ message with metadata
+                DLQMessage dlqMessage = new DLQMessage();
+                dlqMessage.originalMessage = failedJson;
+                dlqMessage.errorType = "JSON_PARSING_ERROR";
+                dlqMessage.timestamp = LocalDateTime.now().toString();
+                dlqMessage.processingComponent = "TripMetricsJob";
+                dlqMessage.errorReason = "Failed to parse JSON to TripEvent";
+                
+                return objectMapper.writeValueAsString(dlqMessage);
+            } catch (Exception e) {
+                // Fallback in case of serialization error
+                return String.format("{\"originalMessage\":\"%s\",\"errorType\":\"JSON_PARSING_ERROR\",\"timestamp\":\"%s\",\"fallback\":true}", 
+                    failedJson.replace("\"", "\\\""), LocalDateTime.now().toString());
+            }
+        }
+    }
+
+    /**
+     * DAY 13: POJO for DLQ messages
+     */
+    public static class DLQMessage {
+        public String originalMessage;
+        public String errorType;
+        public String timestamp;
+        public String processingComponent;
+        public String errorReason;
+        
+        public DLQMessage() {}
     }
 }

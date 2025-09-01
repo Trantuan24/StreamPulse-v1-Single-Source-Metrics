@@ -95,7 +95,7 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 2
+        taskmanager.numberOfTaskSlots: 4
         parallelism.default: 2
         jobmanager.memory.process.size: 1600m
         taskmanager.memory.process.size: 1728m
@@ -106,8 +106,8 @@ services:
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         execution.checkpointing.interval: 1min
         restart-strategy: fixed-delay
-        restart-strategy.fixed-delay.attempts: 5
-        restart-strategy.fixed-delay.delay: 10s
+        restart-strategy.fixed-delay.attempts: 10
+        restart-strategy.fixed-delay.delay: 30s
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
     restart: unless-stopped
@@ -137,7 +137,7 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 2
+        taskmanager.numberOfTaskSlots: 4
         parallelism.default: 2
         jobmanager.memory.process.size: 1600m
         jobmanager.memory.process.size: 1600m
@@ -149,8 +149,8 @@ services:
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         execution.checkpointing.interval: 1min
         restart-strategy: fixed-delay
-        restart-strategy.fixed-delay.attempts: 5
-        restart-strategy.fixed-delay.delay: 10s
+        restart-strategy.fixed-delay.attempts: 10
+        restart-strategy.fixed-delay.delay: 30s
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
     healthcheck:
