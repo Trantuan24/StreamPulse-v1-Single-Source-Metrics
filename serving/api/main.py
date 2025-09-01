@@ -6,8 +6,8 @@ Provides REST API endpoints to query real-time trip metrics from Redis.
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Dict, Any
+from pydantic import BaseModel, Field
+from typing import Optional, Dict
 import redis.asyncio as redis
 import json
 import logging
@@ -66,22 +66,14 @@ app.add_middleware(
 class TripMetrics(BaseModel):
     """Response model for trip metrics."""
     region_id: int = Field(alias='regionId')
-    window_start: str = Field(alias='windowStart')
-    window_end: str = Field(alias='windowEnd')
+    window_start: datetime = Field(alias='windowStart')
+    window_end: datetime = Field(alias='windowEnd')
     trip_count: int = Field(alias='tripCount')
     avg_fare: float = Field(alias='avgFare')
     total_distance: float = Field(alias='totalDistance')
     avg_duration: float = Field(alias='avgDuration')
     p50_duration: Optional[float] = Field(alias='p50Duration', default=None)
     p95_duration: Optional[float] = Field(alias='p95Duration', default=None)
-
-    @field_validator('window_start', 'window_end', mode='before')
-    @classmethod
-    def format_timestamp(cls, v: Any) -> str:
-        if isinstance(v, (int, float)):
-            # Return in ISO 8601 format with 'Z' for UTC
-            return datetime.fromtimestamp(v, tz=timezone.utc).isoformat().replace('+00:00', 'Z')
-        return str(v)
 
     class Config:
         populate_by_name = True
@@ -110,7 +102,7 @@ async def health_check():
 
     return HealthResponse(
         status=api_status,
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
         services={
             "redis": redis_status,
             "api": "running"
@@ -145,8 +137,15 @@ async def get_region_metrics(
                 detail=f"No metrics found for region {region_id}. No keys available."
             )
 
-        # The key with the highest timestamp is the latest one.
-        latest_key = max(keys)
+        # Extract timestamps and find the key with the highest (latest) timestamp.
+        # The key format is 'region:{region_id}:window:{timestamp}'.
+        def get_timestamp_from_key(key):
+            try:
+                return int(key.split(':')[-1])
+            except (IndexError, ValueError):
+                return -1
+
+        latest_key = max(keys, key=get_timestamp_from_key)
         logger.info(f"Found latest key for region {region_id}: {latest_key}")
 
         data = await r.get(latest_key)
@@ -155,7 +154,7 @@ async def get_region_metrics(
             # Data in Redis is stored as a JSON string, so we parse it.
             metrics_data = json.loads(data)
             # Pydantic model will handle aliasing and validation
-            return TripMetrics.model_validate(metrics_data)
+            return TripMetrics.parse_obj(metrics_data)
         else:
             # This case is unlikely if the key was just found, but it's good practice.
             raise HTTPException(

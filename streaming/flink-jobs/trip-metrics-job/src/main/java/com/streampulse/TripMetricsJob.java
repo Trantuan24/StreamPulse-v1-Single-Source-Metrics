@@ -50,8 +50,8 @@ public class TripMetricsJob {
         // IMPORTANT: Set the time characteristic to EventTime for all time-based operations
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        // PERFORMANCE OPTIMIZATION: Increase parallelism
-        env.setParallelism(4);  // Increased from 2 to 4 for better throughput
+        // DAY 12 PERFORMANCE OPTIMIZATION: Set parallelism to match TaskManager slots
+        env.setParallelism(2);  // Match TaskManager numberOfTaskSlots
         
         // Performance optimizations
         env.enableCheckpointing(30000);  // 30 seconds (reduced from default 60s)
@@ -61,14 +61,14 @@ public class TripMetricsJob {
         LOG.info("🚀 Starting StreamPulse v1 - Trip Metrics Job");
         LOG.info("📊 Parallelism: {}", env.getParallelism());
 
-        // 2. Configure Kafka source with OPTIMIZED consumer properties 
+        // 2. Configure Kafka source with OPTIMIZED consumer properties (Day 12)
         Properties kafkaProps = new Properties();
         kafkaProps.setProperty("enable.auto.commit", "true");
         kafkaProps.setProperty("auto.commit.interval.ms", "1000");  // Reduced from 5000ms
         kafkaProps.setProperty("session.timeout.ms", "30000");
         kafkaProps.setProperty("heartbeat.interval.ms", "3000");  // Reduced from 10000ms
         
-        // Performance optimizations
+        // Day 12 Performance optimizations
         kafkaProps.setProperty("fetch.min.bytes", "1024");  // Fetch at least 1KB
         kafkaProps.setProperty("fetch.max.wait.ms", "500");  // Max wait 500ms
         kafkaProps.setProperty("max.partition.fetch.bytes", "1048576");  // 1MB per partition
@@ -96,10 +96,10 @@ public class TripMetricsJob {
                 .process(new EnhancedJsonToTripEventProcessor())
                 .name("Enhanced JSON Parser");
 
-        // 5. Apply event-time watermarks with bounded out-of-orderness
+        // 5. Apply event-time watermarks with EXTENDED out-of-orderness for testing old data
         DataStream<TripEvent> tripStream = tripStreamWithSideOutputs
                 .assignTimestampsAndWatermarks(
-                    WatermarkStrategy.<TripEvent>forBoundedOutOfOrderness(Duration.ofMinutes(2))
+                                        WatermarkStrategy.<TripEvent>forBoundedOutOfOrderness(Duration.ofSeconds(20))
                         .withTimestampAssigner((event, timestamp) -> event.getEventTimeMillis())
                         .withIdleness(Duration.ofSeconds(10)) // Mark source as idle
                 );

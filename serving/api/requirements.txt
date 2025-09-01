@@ -3,13 +3,12 @@
 # FastAPI and ASGI server
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-
 prometheus-fastapi-instrumentator
 # Redis client
 redis==5.0.1
 
 # Data validation and serialization
-pydantic==2.5.0
+pydantic==1.10.13
 
 # HTTP client for health checks
 httpx==0.25.2
