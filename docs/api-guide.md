@@ -1,8 +1,8 @@
 # StreamPulse v1 - API Reference Guide
 
-**Version**: 1.0
-**Last Updated**: August 2025
-**Base URL**: `http://localhost:8000`
+**Version**: 1.0  
+**Last Updated**: August 2025  
+**Base URL**: `http://localhost:8000`  
 
 ---
 
