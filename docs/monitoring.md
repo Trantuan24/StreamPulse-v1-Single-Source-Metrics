@@ -1,7 +1,7 @@
 # StreamPulse v1 - Monitoring & Observability Guide
 
-**Version**: 1.0
-**Last Updated**: August 2025
+**Version**: 1.0  
+**Last Updated**: August 2025  
 
 ---
 
