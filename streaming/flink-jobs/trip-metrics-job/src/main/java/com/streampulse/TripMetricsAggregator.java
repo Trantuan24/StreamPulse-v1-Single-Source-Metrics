@@ -18,10 +18,16 @@ public class TripMetricsAggregator implements AggregateFunction<TripEvent, TripM
     @Override
     public TripMetricsAccumulator add(TripEvent value, TripMetricsAccumulator accumulator) {
         accumulator.count++;
-        accumulator.totalFare += value.getFare();
-        accumulator.totalDistance += value.getDistance();
-        accumulator.totalDuration += value.getDuration();
-        accumulator.durationList.add(value.getDuration());
+        if (value.getFare() != null) {
+            accumulator.totalFare += value.getFare();
+        }
+        if (value.getDistance() != null) {
+            accumulator.totalDistance += value.getDistance();
+        }
+        if (value.getDuration() != null) {
+            accumulator.totalDuration += value.getDuration();
+            accumulator.durationList.add(value.getDuration());
+        }
         return accumulator;
     }
 
