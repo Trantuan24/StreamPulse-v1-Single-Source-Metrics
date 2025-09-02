@@ -9,51 +9,85 @@
 > **Level 1 - StreamMetrics Starter Project**
 > A comprehensive real-time data pipeline for learning stream processing fundamentals
 
-## 📋 Tổng quan
+StreamPulse is a production-grade, end-to-end data pipeline designed for ingesting, processing, and serving real-time analytics on trip data. Built using modern streaming architecture patterns, it demonstrates enterprise-level stream processing capabilities with comprehensive monitoring and fault tolerance.
 
-StreamPulse v1 là một pipeline xử lý dữ liệu thời gian thực end-to-end được thiết kế để chạy trên một máy duy nhất. Dự án này hoàn hảo cho việc học tập và thực hành các công nghệ stream processing hiện đại.
+---
 
-### 🎯 Mục tiêu dự án
+## 🎯 Project Objectives
 
-- **Ingest**: Đọc dữ liệu trip từ CSV/JSON và publish lên Kafka
-- **Processing**: Sử dụng Apache Flink để xử lý event-time với windowing và watermarks
-- **Serving**: Lưu kết quả vào Redis và expose qua FastAPI
-- **Monitoring**: Theo dõi pipeline với Prometheus + Grafana
+- **Ingest**: Read trip data from CSV/JSON sources and publish to Kafka with proper partitioning
+- **Processing**: Utilize Apache Flink for real-time event-time processing with windowing and watermarks
+- **Serving**: Store aggregated results in Redis and expose through FastAPI with comprehensive validation
+- **Monitoring**: Track pipeline health and business metrics with Prometheus + Grafana integration
 
-### 🏗️ Kiến trúc hệ thống
+## ✨ Key Features
+
+- **Real-Time Processing**: Utilizes Apache Flink for low-latency, event-time based stream processing with exactly-once semantics.
+- **Scalable & Resilient**: Built on Apache Kafka for durable messaging and designed for high throughput and fault-tolerance.
+- **High-Performance Serving**: Uses Redis for fast in-memory storage and a FastAPI backend for quick, asynchronous data retrieval.
+- **Comprehensive Monitoring**: Integrated with Prometheus and Grafana for deep insights into both system health and business metrics.
+- **Containerized**: Fully containerized with Docker Compose for consistent development and production environments.
+- **Developer Friendly**: Simplified setup and operations using a `Makefile` for common tasks.
+
+---
+
+## 🏛️ Architecture
+
+The pipeline follows a classic stream processing architecture, ensuring data flows efficiently from ingestion to presentation.
+
+```mermaid
+flowchart TD
+    subgraph "Data Source"
+        Producer["CSV Data Producer <br> (Python Script)"]
+    end
+
+    subgraph "Messaging Layer"
+        Kafka("Apache Kafka <br> `events` topic")
+    end
+
+    subgraph "Processing Layer"
+        Flink["Apache Flink <br> (Trip Metrics Job)"]
+    end
+
+    subgraph "Serving & Monitoring"
+        Redis[("Redis <br> Aggregated Metrics")]
+        API["FastAPI <br> (REST API)"]
+        Grafana["Grafana <br> (Dashboards)"]
+        Prometheus["Prometheus <br> (Metrics)"]
+    end
+
+    Producer --> Kafka
+    Kafka --> Flink
+    Flink --> Redis
+    API --> Redis
+    Flink -- Metrics --> Prometheus
+    API -- Metrics --> Prometheus
+    Grafana --> Prometheus
+    Grafana --> API
+```
+
+---
+
+## 🛠️ Technology Stack
+
+- **Message Bus**: Apache Kafka (with Zookeeper)
+- **Stream Processing**: Apache Flink (JobManager + TaskManager)
+- **Serving Layer**: Redis (in-memory key-value store)
+- **API Layer**: FastAPI (Python with Pydantic validation)
+- **Monitoring**: Prometheus + Grafana + Alertmanager
+- **Deployment**: Docker Compose (production-ready containers)
+
+## 📁 Project Structure
 
 ```
-CSV Data → Kafka → Flink (Windowing) → Redis → FastAPI → Grafana Dashboard
-```
-
-### 🛠️ Technology Stack
-
-- **Message Bus**: Apache Kafka (1 broker)
-- **Stream Processing**: Apache Flink (1 JobManager, 1-2 TaskManagers)
-- **Serving Layer**: Redis (key-value store)
-- **API Layer**: FastAPI (Python)
-- **Monitoring**: Prometheus + Grafana
-- **Deployment**: Docker Compose
-
-### SLO (Service Level Objectives)
-
-- **Latency**: p95 end-to-end latency ≤ 3 giây
-- **Throughput**: Xử lý được 1-3k events/giây trên laptop
-- **Reliability**: Consumer lag ≈ 0 trong ít nhất 5 phút liên tục
-- **Recovery**: Khôi phục từ checkpoint khi TaskManager bị kill
-
-### Cấu Trúc Dự Án
-
-```
-tripstream-analytics/
+streampulse/
 ├── infra/
 │   └── docker-compose/          # Docker Compose configurations
 ├── streaming/
-│   ├── jobs/                    # Flink applications
-│   └── schemas/                 # Data schemas (JSON/Avro)
+│   ├── flink-jobs/              # Flink applications
+│   └── schemas/                 # Data schemas (Pydantic models)
 ├── producers/
-│   ├── replay/                  # CSV/JSON replay producer
-│   └── synthetic/               # Synthetic data generator
+│   └── replay/                  # CSV replay producers
 ├── serving/
 │   └── api/                     # FastAPI application
 ├── monitoring/
@@ -64,53 +98,87 @@ tripstream-analytics/
 │   ├── Makefile                 # Automation scripts
 │   ├── scripts/                 # Utility scripts
 │   └── data/                    # Sample data files
-└── README.md                    # This file
+└── docs/                        # Comprehensive documentation
 ```
 
-## 🚀 Quick Start
+---
+
+## 🚀 Getting Started
+
+This section provides a brief overview of how to get the project running. For detailed steps, please see the **[Getting Started Guide](./docs/getting-started.md)**.
 
 ### Prerequisites
 
-- Docker và Docker Compose
-- `make` command (hoặc chạy trực tiếp từ `ops/Makefile`)
-- Ít nhất 4GB RAM available
+- **Docker**: Docker Desktop with Docker Compose support
+- **Python**: Version 3.9 or higher
+- **Make**: Command-line utility (standard on Linux/macOS, install via Git Bash/WSL on Windows)
+- **Git**: For cloning the repository
 
-### Khởi chạy pipeline
+### Quick Start
 
-```bash
-# Clone repository
-git clone https://github.com/Trantuan24/StreamPulse-v1-Single-Source-Metrics
-cd StreamPulse-v1
+1.  **Clone the repository** and navigate into the directory.
+2.  **Create and activate a Python virtual environment**.
+3.  **Install dependencies**:
+    ```bash
+    pip install -r serving/api/requirements.txt
+    pip install -r producers/replay/requirements.txt
+    ```
+4.  **Navigate to the `ops/` directory**: `cd ops`
+5.  **Run the setup command**: `make clean && make setup`
 
-# Khởi động toàn bộ pipeline
-cd ops
-make setup
+This will build all images, start the services, create Kafka topics, and submit the Flink job.
 
-# Gửi dữ liệu test
-make produce-test
+---
 
-# Kiểm tra API
-make test-api
-```
+## ⚙️ Usage
 
-### 🔗 Truy cập các dịch vụ
+All `make` commands should be run from the `ops/` directory.
 
-| Service               | URL                        | Credentials |
-| --------------------- | -------------------------- | ----------- |
-| **Grafana Dashboard** | http://localhost:3000      | admin/admin |
-| **Flink Web UI**      | http://localhost:8081      | -           |
-| **Prometheus**        | http://localhost:9090      | -           |
-| **FastAPI Docs**      | http://localhost:8000/docs | -           |
+- **Start the entire pipeline**:
 
-### Dừng và dọn dẹp
+  ```bash
+  make setup
+  ```
 
-```bash
-# Dừng services
-make down
+- **Produce sample data**:
 
-# Dọn dẹp hoàn toàn
-make clean
-```
+  ```bash
+  make produce-test
+  ```
+
+- **Test the API endpoint**:
+
+  ```bash
+  make test-api
+  ```
+
+- **View logs**:
+
+  ```bash
+  make logs       # All services
+  make logs-flink # Only Flink
+  ```
+
+- **Shut down the pipeline**:
+  ```bash
+  make down
+  ```
+
+---
+
+## 📊 Monitoring & Service Access
+
+Once the pipeline is running, you can access the following interfaces:
+
+| Service               | URL                          | Credentials | Description                      |
+| --------------------- | ---------------------------- | ----------- | -------------------------------- |
+| **FastAPI Docs**      | http://localhost:8000/docs   | -           | Interactive API documentation    |
+| **API Health Check**  | http://localhost:8000/health | -           | System health status             |
+| **Flink Web UI**      | http://localhost:8081        | -           | Stream processing job monitoring |
+| **Grafana Dashboard** | http://localhost:3000        | admin/admin | Business metrics dashboards      |
+| **Prometheus**        | http://localhost:9090        | -           | Raw metrics and alerting rules   |
+
+---
 
 ## 📊 Data Schema & API
 
@@ -129,76 +197,78 @@ make clean
 
 ### 🔌 API Endpoints
 
-| Method | Endpoint                                | Description                            |
-| ------ | --------------------------------------- | -------------------------------------- |
-| `GET`  | `/metrics/region/{region_id}?window=1m` | Lấy metrics theo region và time window |
-| `GET`  | `/health`                               | Health check endpoint                  |
-| `GET`  | `/metrics`                              | Prometheus metrics endpoint            |
-| `GET`  | `/docs`                                 | Interactive API documentation          |
+| Method | Endpoint                                | Description                           |
+| ------ | --------------------------------------- | ------------------------------------- |
+| `GET`  | `/metrics/region/{region_id}?window=1m` | Get metrics by region and time window |
+| `GET`  | `/health`                               | Health check endpoint                 |
+| `GET`  | `/metrics`                              | Prometheus metrics endpoint           |
+| `GET`  | `/docs`                                 | Interactive API documentation         |
 
-### 📈 Monitoring Dashboards
+---
 
-- **Pipeline Overview**: Throughput, latency, error rates
-- **Kafka Metrics**: Consumer lag, partition distribution
-- **Flink Metrics**: Checkpoint status, backpressure, task utilization
-- **Business Metrics**: Trip counts, average fare by region
+## 🔧 Troubleshooting
 
-## 🔧 Development & Troubleshooting
+| Issue                | Solution                                     |
+| -------------------- | -------------------------------------------- |
+| **Service Failures** | Check `make logs`, verify container health   |
+| **High Latency**     | Monitor Flink backpressure, tune parallelism |
+| **Memory Issues**    | Increase limits in docker-compose.yml        |
 
-### Development Workflow
+See [Troubleshooting Guide](docs/troubleshooting.md) for detailed solutions.
 
-1. **Local Development**: Sử dụng Docker Compose để chạy tất cả services
-2. **Testing**: Unit tests cho Flink jobs, integration tests cho API
-3. **Debugging**: Logs aggregation, metrics monitoring
-4. **Performance Testing**: Load testing với synthetic data
+---
 
-### Common Issues & Solutions
+## 📚 Documentation
 
-| Issue                       | Solution                                        |
-| --------------------------- | ----------------------------------------------- |
-| **Kafka Connection Issues** | Kiểm tra port 9092, container networking        |
-| **Flink Job Failures**      | Xem logs trong Flink UI (http://localhost:8081) |
-| **High Latency**            | Monitor backpressure, checkpoint duration       |
-| **Data Loss**               | Verify checkpoint configuration và recovery     |
-| **Out of Memory**           | Tăng memory limits trong docker-compose.yml     |
+| Document                                   | Description                                |
+| ------------------------------------------ | ------------------------------------------ |
+| [Architecture Guide](docs/architecture.md) | Technical architecture and design overview |
+| [Getting Started](docs/getting-started.md) | Detailed setup and installation guide      |
+| [API Reference](docs/api-guide.md)         | Complete API documentation with examples   |
+| [Monitoring Guide](docs/monitoring.md)     | Grafana dashboards and alerting setup      |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging procedures     |
 
-### Performance Tuning
+---
 
-- **Flink**: Adjust parallelism, checkpoint intervals
-- **Kafka**: Tune batch size, compression
-- **Redis**: Configure memory policies, persistence
+## 📊 Business Metrics & Performance
 
-## 🎯 SLO (Service Level Objectives)
+**Key Analytics**: Trip volume, revenue analytics, duration patterns by region  
+**Performance**: End-to-end latency ≤ 3s, 10K+ events/sec throughput  
+**Reliability**: Zero data loss with exactly-once processing
 
-- **Latency**: p95 end-to-end latency ≤ 3 giây
-- **Throughput**: Xử lý được 1-3k events/giây trên laptop
-- **Reliability**: Consumer lag ≈ 0 trong ít nhất 5 phút liên tục
-- **Recovery**: Khôi phục từ checkpoint khi TaskManager bị kill
+---
 
 ## 🚀 Next Steps
 
-Sau khi hoàn thành Level 1, có thể tiến lên:
+After mastering Level 1, consider progressing to:
 
-- **Level 2**: MultiStream Intelligence (Interval joins, OLAP, Schema Registry)
-- **Level 3**: CloudStream Platform (Kubernetes, HA, Blue-Green deployment)
+- **Level 2**: Multi-stream joins, OLAP analytics, Schema Registry
+- **Level 3**: Kubernetes deployment, HA setup, advanced security
+
+---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Contributions are welcome! Please:
+
+1. Fork the repository and create a feature branch
+2. Follow existing coding standards and add tests
+3. Update documentation for user-facing changes
+4. Submit a Pull Request with clear description
+
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](./LICENSE) file for details.
+
+---
 
 ## 🙏 Acknowledgments
 
-- Apache Flink Community
-- Confluent Platform
-- FastAPI Framework
-- Grafana Labs
+- [Apache Flink Community](https://flink.apache.org/) - Stream processing engine
+- [Apache Kafka](https://kafka.apache.org/) - Distributed streaming platform
+- [FastAPI Framework](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [Grafana Labs](https://grafana.com/) - Observability and monitoring platform
 
----
+**StreamPulse** - _Real-Time Analytics Made Simple_ 🚀
